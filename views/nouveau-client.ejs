@@ -1,0 +1,57 @@
+<%- include('partials/header') %>
+
+<div class="page__entete">
+  <h1 class="page__titre">Nouveau client</h1>
+  <span class="page__date"><%= new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }) %></span>
+</div>
+
+<% if (flash) { %>
+  <div class="message message--<%= flash.type === 'succes' ? 'succes' : 'erreur' %>">
+    <%= flash.message %>
+  </div>
+<% } %>
+
+<% if (erreurs && erreurs.length > 0) { %>
+  <div class="liste-erreurs">
+    Le formulaire contient des erreurs :
+    <ul>
+      <% erreurs.forEach(function(erreur) { %>
+        <li><%= erreur %></li>
+      <% }); %>
+    </ul>
+  </div>
+<% } %>
+
+<form class="formulaire" action="/clients" method="POST" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+  <div class="champ-double">
+    <div class="champ">
+      <label for="nom">Nom</label>
+      <input type="text" id="nom" name="nom" value="<%= valeurs.nom || '' %>" maxlength="100" required autofocus />
+    </div>
+    <div class="champ">
+      <label for="prenom">Prénom</label>
+      <input type="text" id="prenom" name="prenom" value="<%= valeurs.prenom || '' %>" maxlength="100" required />
+    </div>
+  </div>
+
+  <div class="champ">
+    <label for="telephone">Téléphone</label>
+    <input type="tel" id="telephone" name="telephone" value="<%= valeurs.telephone || '' %>" maxlength="20" required />
+  </div>
+
+  <div class="champ">
+    <label for="email">Email <span class="indication">(facultatif)</span></label>
+    <input type="email" id="email" name="email" value="<%= valeurs.email || '' %>" maxlength="254" />
+  </div>
+
+  <div class="champ">
+    <label for="adresse">Adresse <span class="indication">(facultatif)</span></label>
+    <input type="text" id="adresse" name="adresse" value="<%= valeurs.adresse || '' %>" maxlength="255" />
+  </div>
+
+  <button type="submit" class="bouton">Enregistrer le client</button>
+</form>
+
+<%- include('partials/footer') %>

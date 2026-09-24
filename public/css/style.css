@@ -1,0 +1,583 @@
+/* ==========================================================================
+   Identité visuelle : un registre relié, pas un tableau de bord SaaS.
+   - Reliure (sidebar) vert forêt, tranche dorée.
+   - Pages couleur papier, réglures fines, numérotation d'entrées réelle.
+   - Un seul geste "vivant" : le tampon doré des actions principales.
+   ========================================================================== */
+
+:root {
+  --color-cover: #1f3d2b;
+  --color-cover-light: #2a4d38;
+  --color-paper: #ece7da;
+  --color-paper-alt: #e2ddcd;
+  --color-ink: #21201c;
+  --color-ink-soft: #57544a;
+  --color-accent: #a9762f;
+  --color-accent-dark: #7e5820;
+  --color-rule: #c9c1ae;
+  --color-danger: #8b2e2e;
+  --color-danger-bg: #f3e4e2;
+  --color-success: #2f5d40;
+  --color-success-bg: #e4ede2;
+
+  --font-display: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  --sidebar-width: 232px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--color-paper-alt);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+a {
+  color: var(--color-accent-dark);
+}
+
+/* -------------------------------------------------------------------------
+   Mise en page générale : reliure à gauche, page à droite
+   ------------------------------------------------------------------------- */
+
+.mise-en-page {
+  display: flex;
+  min-height: 100vh;
+}
+
+.reliure {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  background: var(--color-cover);
+  color: #ece7da;
+  display: flex;
+  flex-direction: column;
+  padding: 28px 22px;
+  border-right: 6px solid var(--color-accent);
+}
+
+.reliure__titre {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  line-height: 1.25;
+  margin: 0 0 6px;
+  letter-spacing: 0.01em;
+}
+
+.reliure__sous-titre {
+  font-size: 0.82rem;
+  color: #cfd6c9;
+  margin: 0 0 32px;
+}
+
+.reliure__nav {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reliure__lien {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 2px;
+  color: #e7e3d6;
+  text-decoration: none;
+  font-size: 0.95rem;
+  border-left: 3px solid transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.reliure__lien:hover {
+  background: var(--color-cover-light);
+}
+
+.reliure__lien--actif {
+  border-left-color: var(--color-accent);
+  background: var(--color-cover-light);
+  font-weight: 600;
+}
+
+.reliure__pied {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid rgba(236, 231, 218, 0.2);
+}
+
+.reliure__utilisateur {
+  font-size: 0.82rem;
+  color: #cfd6c9;
+  margin: 0 0 10px;
+}
+
+.bouton-lien {
+  background: none;
+  border: none;
+  color: #e7e3d6;
+  font-size: 0.85rem;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: inherit;
+}
+
+.bouton-lien:hover {
+  color: #ffffff;
+}
+
+.page {
+  flex: 1;
+  min-width: 0;
+  padding: 40px 48px 60px;
+  max-width: 920px;
+}
+
+.page__entete {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid var(--color-rule);
+  padding-bottom: 14px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.page__titre {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  margin: 0;
+}
+
+.page__date {
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+/* -------------------------------------------------------------------------
+   Messages flash
+   ------------------------------------------------------------------------- */
+
+.message {
+  padding: 12px 16px;
+  border-radius: 2px;
+  margin-bottom: 24px;
+  font-size: 0.92rem;
+  border: 1px solid transparent;
+}
+
+.message--succes {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.message--erreur {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.liste-erreurs {
+  margin: 0 0 24px;
+  padding: 14px 18px;
+  background: var(--color-danger-bg);
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger);
+  border-radius: 2px;
+  font-size: 0.9rem;
+}
+
+.liste-erreurs ul {
+  margin: 6px 0 0;
+  padding-left: 20px;
+}
+
+/* -------------------------------------------------------------------------
+   Formulaires : lignes de ledger, pas de boîtes ombrées
+   ------------------------------------------------------------------------- */
+
+.formulaire {
+  max-width: 520px;
+}
+
+.champ {
+  margin-bottom: 22px;
+}
+
+.champ label {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--color-ink-soft);
+  margin-bottom: 6px;
+}
+
+.champ .indication {
+  font-weight: normal;
+  color: var(--color-ink-soft);
+}
+
+.champ input {
+  width: 100%;
+  padding: 9px 4px;
+  font-size: 1rem;
+  font-family: var(--font-body);
+  color: var(--color-ink);
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid var(--color-rule);
+  border-radius: 0;
+}
+
+.champ input:focus {
+  outline: none;
+  border-bottom-color: var(--color-accent);
+}
+
+.champ-double {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 560px) {
+  .champ-double {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Boutons — le "tampon" est le seul élément à animation, volontairement.
+   ------------------------------------------------------------------------- */
+
+.bouton {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 11px 26px;
+  border: 1.5px solid var(--color-accent);
+  border-radius: 3px;
+  background: var(--color-accent);
+  color: #fff9ef;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.12s ease, background-color 0.12s ease;
+}
+
+.bouton:hover {
+  background: var(--color-accent-dark);
+  border-color: var(--color-accent-dark);
+  transform: rotate(-0.6deg);
+}
+
+.bouton:focus-visible {
+  outline: 3px solid var(--color-cover);
+  outline-offset: 2px;
+}
+
+.bouton--discret {
+  background: transparent;
+  color: var(--color-accent-dark);
+}
+
+.bouton--discret:hover {
+  background: rgba(169, 118, 47, 0.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bouton,
+  .reliure__lien {
+    transition: none;
+  }
+  .bouton:hover {
+    transform: none;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Barre d'outils de la liste (recherche + export)
+   ------------------------------------------------------------------------- */
+
+.barre-outils {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.recherche {
+  display: flex;
+  border-bottom: 1.5px solid var(--color-rule);
+  min-width: 220px;
+  flex: 1;
+  max-width: 320px;
+}
+
+.recherche input {
+  border: none;
+  background: transparent;
+  padding: 8px 4px;
+  font-size: 0.95rem;
+  width: 100%;
+  font-family: var(--font-body);
+  color: var(--color-ink);
+}
+
+.recherche input:focus {
+  outline: none;
+}
+
+.recherche button {
+  border: none;
+  background: transparent;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+/* -------------------------------------------------------------------------
+   Table du registre
+   ------------------------------------------------------------------------- */
+
+.registre {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.92rem;
+}
+
+.registre thead th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-ink-soft);
+  font-size: 0.82rem;
+  padding: 8px 10px;
+  border-bottom: 2px solid var(--color-ink);
+  position: sticky;
+  top: 0;
+  background: var(--color-paper-alt);
+}
+
+.registre tbody td {
+  padding: 10px 10px;
+  border-bottom: 1px solid var(--color-rule);
+  vertical-align: top;
+}
+
+.registre tbody tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.registre__numero {
+  color: var(--color-ink-soft);
+  width: 44px;
+}
+
+.etat-vide {
+  padding: 40px 20px;
+  text-align: left;
+  border: 1px dashed var(--color-rule);
+  border-radius: 3px;
+  color: var(--color-ink-soft);
+}
+
+.etat-vide a {
+  font-weight: 600;
+}
+
+/* -------------------------------------------------------------------------
+   Actions de ligne (modifier / supprimer)
+   ------------------------------------------------------------------------- */
+
+.registre__actions-entete {
+  text-align: right;
+  width: 140px;
+}
+
+.registre__actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.formulaire-suppression {
+  display: inline;
+}
+
+.lien-action {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: 14px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  color: var(--color-accent-dark);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.lien-action:hover {
+  text-decoration: underline;
+}
+
+.lien-action--danger {
+  color: var(--color-danger);
+}
+
+/* -------------------------------------------------------------------------
+   Pagination
+   ------------------------------------------------------------------------- */
+
+.pagination {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 22px;
+  font-size: 0.88rem;
+  color: var(--color-ink-soft);
+}
+
+.pagination a {
+  color: var(--color-accent-dark);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.pagination a:hover {
+  text-decoration: underline;
+}
+
+.pagination .desactive {
+  color: var(--color-rule);
+  pointer-events: none;
+}
+
+/* -------------------------------------------------------------------------
+   Page de connexion : traitée comme la couverture du registre
+   ------------------------------------------------------------------------- */
+
+.connexion {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-cover);
+  padding: 20px;
+}
+
+.connexion__carte {
+  width: 100%;
+  max-width: 380px;
+  background: var(--color-paper);
+  padding: 40px 36px;
+  border-top: 6px solid var(--color-accent);
+  border-radius: 2px;
+}
+
+.connexion__titre {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  margin: 0 0 4px;
+}
+
+.connexion__sous-titre {
+  font-size: 0.88rem;
+  color: var(--color-ink-soft);
+  margin: 0 0 28px;
+}
+
+.connexion .bouton {
+  width: 100%;
+  text-align: center;
+  margin-top: 6px;
+}
+
+/* -------------------------------------------------------------------------
+   Page d'erreur
+   ------------------------------------------------------------------------- */
+
+.erreur-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: var(--color-paper-alt);
+}
+
+.erreur-page__carte {
+  max-width: 460px;
+  text-align: left;
+}
+
+.erreur-page__titre {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  margin: 0 0 10px;
+}
+
+/* -------------------------------------------------------------------------
+   Responsive : la reliure devient une barre supérieure
+   ------------------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  .mise-en-page {
+    flex-direction: column;
+  }
+
+  .reliure {
+    width: 100%;
+    border-right: none;
+    border-bottom: 6px solid var(--color-accent);
+    flex-direction: row;
+    align-items: center;
+    padding: 16px 20px;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .reliure__sous-titre {
+    display: none;
+  }
+
+  .reliure__nav {
+    flex-direction: row;
+    flex: 1;
+  }
+
+  .reliure__pied {
+    margin-top: 0;
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .page {
+    padding: 28px 20px 40px;
+  }
+
+  .barre-outils {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .recherche {
+    max-width: none;
+  }
+}

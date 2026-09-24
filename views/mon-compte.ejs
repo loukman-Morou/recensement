@@ -1,0 +1,68 @@
+<%- include('partials/header') %>
+
+<div class="page__entete">
+  <h1 class="page__titre">Mon compte</h1>
+  <span class="page__date">Connecté : <%= utilisateurConnecte %></span>
+</div>
+
+<% if (flash) { %>
+  <div class="message message--<%= flash.type === 'succes' ? 'succes' : 'erreur' %>">
+    <%= flash.message %>
+  </div>
+<% } %>
+
+<% if (erreurs && erreurs.length > 0) { %>
+  <div class="liste-erreurs">
+    <ul>
+      <% erreurs.forEach(function(erreur) { %>
+        <li><%= erreur %></li>
+      <% }); %>
+    </ul>
+  </div>
+<% } %>
+
+<form class="formulaire" action="/mon-compte/mot-de-passe" method="POST" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+  <div class="champ">
+    <label for="motDePasseActuel">Mot de passe actuel</label>
+    <input
+      type="password"
+      id="motDePasseActuel"
+      name="motDePasseActuel"
+      required
+      maxlength="200"
+      autocomplete="current-password"
+    />
+  </div>
+
+  <div class="champ">
+    <label for="nouveauMotDePasse">Nouveau mot de passe <span class="indication">(10 caractères minimum)</span></label>
+    <input
+      type="password"
+      id="nouveauMotDePasse"
+      name="nouveauMotDePasse"
+      required
+      minlength="10"
+      maxlength="200"
+      autocomplete="new-password"
+    />
+  </div>
+
+  <div class="champ">
+    <label for="confirmationMotDePasse">Confirmer le nouveau mot de passe</label>
+    <input
+      type="password"
+      id="confirmationMotDePasse"
+      name="confirmationMotDePasse"
+      required
+      minlength="10"
+      maxlength="200"
+      autocomplete="new-password"
+    />
+  </div>
+
+  <button type="submit" class="bouton">Mettre à jour le mot de passe</button>
+</form>
+
+<%- include('partials/footer') %>

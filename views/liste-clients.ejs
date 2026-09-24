@@ -1,0 +1,96 @@
+<%- include('partials/header') %>
+
+<div class="page__entete">
+  <h1 class="page__titre">Liste des clients</h1>
+  <span class="page__date"><%= total %> client<%= total > 1 ? 's' : '' %> recensé<%= total > 1 ? 's' : '' %></span>
+</div>
+
+<% if (flash) { %>
+  <div class="message message--<%= flash.type === 'succes' ? 'succes' : 'erreur' %>">
+    <%= flash.message %>
+  </div>
+<% } %>
+
+<div class="barre-outils">
+  <form class="recherche" action="/clients/liste" method="GET">
+    <input
+      type="search"
+      name="q"
+      value="<%= search %>"
+      placeholder="Rechercher nom, prénom, téléphone…"
+      aria-label="Rechercher un client"
+    />
+    <button type="submit">Rechercher</button>
+  </form>
+
+  <a class="bouton" href="/clients/liste/pdf<%= search ? '?q=' + encodeURIComponent(search) : '' %>">
+    Télécharger la liste (PDF)
+  </a>
+</div>
+
+<% if (clients.length === 0) { %>
+  <p class="etat-vide">
+    <% if (search) { %>
+      Aucun client ne correspond à « <%= search %> ».
+      <a href="/clients/liste">Effacer la recherche</a>.
+    <% } else { %>
+      Aucun client enregistré pour l'instant.
+      <a href="/clients">Enregistrer le premier client</a>.
+    <% } %>
+  </p>
+<% } else { %>
+  <table class="registre">
+    <thead>
+      <tr>
+        <th class="registre__numero">N°</th>
+        <th>Nom</th>
+        <th>Prénom</th>
+        <th>Téléphone</th>
+        <th>Email</th>
+        <th>Enregistré le</th>
+        <th class="registre__actions-entete">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% clients.forEach(function(client) { %>
+        <tr>
+          <td class="registre__numero">#<%= client.id %></td>
+          <td><%= client.nom %></td>
+          <td><%= client.prenom %></td>
+          <td><%= client.telephone %></td>
+          <td><%= client.email || '—' %></td>
+          <td><%= client.date_enregistrement %></td>
+          <td class="registre__actions">
+            <a class="lien-action" href="/clients/<%= client.id %>/modifier">Modifier</a>
+            <form
+              class="formulaire-suppression"
+              action="/clients/<%= client.id %>/supprimer"
+              method="POST"
+              data-client-nom="<%= client.prenom %> <%= client.nom %>"
+            >
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+              <button type="submit" class="lien-action lien-action--danger">Supprimer</button>
+            </form>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+
+  <% if (totalPages > 1) { %>
+    <nav class="pagination" aria-label="Pagination">
+      <% var baseQuery = search ? '&q=' + encodeURIComponent(search) : ''; %>
+      <a
+        class="<%= page <= 1 ? 'desactive' : '' %>"
+        href="/clients/liste?page=<%= page - 1 %><%= baseQuery %>"
+      >← Précédent</a>
+      <span>Page <%= page %> / <%= totalPages %></span>
+      <a
+        class="<%= page >= totalPages ? 'desactive' : '' %>"
+        href="/clients/liste?page=<%= page + 1 %><%= baseQuery %>"
+      >Suivant →</a>
+    </nav>
+  <% } %>
+<% } %>
+
+<%- include('partials/footer') %>

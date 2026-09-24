@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= titrePage %> — Registre des clients</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="mise-en-page">
+    <aside class="reliure">
+      <div>
+        <p class="reliure__titre">Registre<br />des clients</p>
+        <p class="reliure__sous-titre">Recensement interne</p>
+      </div>
+      <ul class="reliure__nav">
+        <li>
+          <a class="reliure__lien <%= pageActive === 'nouveau' ? 'reliure__lien--actif' : '' %>" href="/clients">
+            Nouveau client
+          </a>
+        </li>
+        <li>
+          <a class="reliure__lien <%= pageActive === 'liste' ? 'reliure__lien--actif' : '' %>" href="/clients/liste">
+            Liste des clients
+          </a>
+        </li>
+        <li>
+          <a class="reliure__lien <%= pageActive === 'compte' ? 'reliure__lien--actif' : '' %>" href="/mon-compte">
+            Mon compte
+          </a>
+        </li>
+      </ul>
+      <div class="reliure__pied">
+        <% if (typeof utilisateurConnecte !== 'undefined' && utilisateurConnecte) { %>
+          <p class="reliure__utilisateur">Connecté : <%= utilisateurConnecte %></p>
+          <form action="/deconnexion" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+            <button type="submit" class="bouton-lien">Se déconnecter</button>
+          </form>
+        <% } %>
+      </div>
+    </aside>
+
+    <main class="page">

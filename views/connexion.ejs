@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connexion — Registre des clients</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="connexion">
+    <div class="connexion__carte">
+      <h1 class="connexion__titre">Registre des clients</h1>
+      <p class="connexion__sous-titre">Connectez-vous pour accéder au recensement.</p>
+
+      <% if (erreurs && erreurs.length > 0) { %>
+        <div class="liste-erreurs">
+          <ul>
+            <% erreurs.forEach(function(erreur) { %>
+              <li><%= erreur %></li>
+            <% }); %>
+          </ul>
+        </div>
+      <% } %>
+
+      <form action="/connexion" method="POST">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+        <div class="champ">
+          <label for="username">Identifiant</label>
+          <input type="text" id="username" name="username" required autofocus maxlength="100" />
+        </div>
+
+        <div class="champ">
+          <label for="password">Mot de passe</label>
+          <input type="password" id="password" name="password" required maxlength="200" />
+        </div>
+
+        <button type="submit" class="bouton">Se connecter</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

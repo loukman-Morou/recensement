@@ -6,6 +6,7 @@
 // l'application.
 
 const readline = require('readline');
+const { pool, initSchema } = require('../src/db');
 const userService = require('../src/services/userService');
 
 function ask(question) {
@@ -57,6 +58,10 @@ function askHidden(question) {
 async function main() {
   console.log("=== Création / réinitialisation de l'administrateur ===\n");
 
+  // Nécessaire si ce script est lancé avant le tout premier démarrage du
+  // serveur (les tables n'existeraient pas encore sinon).
+  await initSchema();
+
   const username = await ask("Nom d'utilisateur : ");
   if (!username || username.length < 3) {
     console.error("\nL'identifiant doit contenir au moins 3 caractères.");
@@ -81,10 +86,12 @@ async function main() {
       ? `\nMot de passe mis à jour pour "${username}".`
       : `\nCompte administrateur "${username}" créé avec succès.`
   );
+  await pool.end();
   process.exit(0);
 }
 
-main().catch((err) => {
+main().catch(async (err) => {
   console.error('Erreur :', err);
+  await pool.end().catch(() => {});
   process.exit(1);
 });

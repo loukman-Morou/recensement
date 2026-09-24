@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Compte créé — Registre des clients</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="connexion">
+    <div class="connexion__carte">
+      <h1 class="connexion__titre">Compte créé</h1>
+      <p class="connexion__sous-titre">
+        Le compte administrateur « <%= username %> » a été créé avec succès.
+      </p>
+      <p>
+        Retirez maintenant la variable d'environnement
+        <code>ADMIN_BOOTSTRAP_SECRET</code> de la configuration de votre
+        hébergeur (Render), puis redéployez ou redémarrez le service : cela
+        désactive définitivement cette page.
+      </p>
+      <a class="bouton" href="/connexion">Aller à la page de connexion</a>
+    </div>
+  </div>
+</body>
+</html>

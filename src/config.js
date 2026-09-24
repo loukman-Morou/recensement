@@ -36,8 +36,28 @@ const config = {
   },
 
   database: {
-    path: process.env.DATABASE_PATH || './data/recensement.db',
+    // Render (et la plupart des hébergeurs) fournissent cette variable
+    // automatiquement quand une base PostgreSQL est liée au service.
+    url: required(
+      'DATABASE_URL',
+      'postgresql://postgres:postgres@localhost:5432/recensement'
+    ),
+    // La plupart des PostgreSQL managés (Render, Heroku, Supabase...)
+    // exigent TLS, avec un certificat auto-signé côté serveur : on ne
+    // vérifie donc pas la chaîne de certificats. Mettre DATABASE_SSL=false
+    // explicitement pour une base locale sans TLS.
+    ssl:
+      process.env.DATABASE_SSL === 'false'
+        ? false
+        : process.env.DATABASE_SSL === 'true' ||
+          process.env.NODE_ENV === 'production',
   },
+
+  // Permet de créer LE PREMIER compte administrateur via une page web,
+  // pour les hébergements où l'on n'a pas d'accès shell (ex. Render sur
+  // un plan sans "Shell"). Laisser cette variable absente désactive
+  // complètement la fonctionnalité. Voir README.md.
+  adminBootstrapSecret: process.env.ADMIN_BOOTSTRAP_SECRET || null,
 };
 
 module.exports = config;

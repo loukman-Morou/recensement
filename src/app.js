@@ -1,20 +1,24 @@
 const path = require('path');
 const express = require('express');
 const session = require('express-session');
+const pgSessionFactory = require('connect-pg-simple');
 
 const config = require('./config');
+const { pool, initSchema } = require('./db');
 const { helmetMiddleware } = require('./middleware/security');
 const csrfProtection = require('./middleware/csrf');
 const flashMiddleware = require('./middleware/flash');
 const authRoutes = require('./routes/auth');
 const clientRoutes = require('./routes/clients');
 const compteRoutes = require('./routes/compte');
+const amorcageRoutes = require('./routes/amorcage');
 
 const app = express();
+const PgSession = pgSessionFactory(session);
 
 // Nécessaire pour que les cookies "secure" fonctionnent correctement
 // lorsque l'application est servie derrière un reverse proxy TLS
-// (Nginx, Caddy, load balancer...) en production.
+// (Render, Nginx, Caddy, load balancer...) en production.
 if (config.isProduction) {
   app.set('trust proxy', 1);
 }
@@ -39,6 +43,15 @@ app.use(
 app.use(express.urlencoded({ extended: false, limit: '10kb' }));
 app.use(
   session({
+    // Les sessions sont stockées dans PostgreSQL (table "session",
+    // créée automatiquement) plutôt qu'en mémoire : elles survivent aux
+    // redémarrages du serveur et fonctionnent même si l'hébergeur fait
+    // tourner plusieurs instances de l'application en parallèle.
+    store: new PgSession({
+      pool,
+      tableName: 'session',
+      createTableIfMissing: true,
+    }),
     name: config.session.cookieName,
     secret: config.session.secret,
     resave: false,
@@ -69,6 +82,7 @@ app.get('/', (req, res) => {
 app.use(authRoutes);
 app.use(clientRoutes);
 app.use(compteRoutes);
+app.use(amorcageRoutes);
 
 app.use((req, res) => {
   res.status(404).render('erreur', {
@@ -92,11 +106,22 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(config.port, () => {
-  console.log(`Serveur démarré sur http://localhost:${config.port}`);
-  if (!config.isProduction) {
-    console.log('Mode développement — vérifiez votre fichier .env avant la mise en production.');
-  }
+async function start() {
+  // Crée les tables si elles n'existent pas encore (idempotent) avant
+  // d'accepter la moindre requête HTTP.
+  await initSchema();
+
+  app.listen(config.port, () => {
+    console.log(`Serveur démarré sur http://localhost:${config.port}`);
+    if (!config.isProduction) {
+      console.log('Mode développement — vérifiez votre fichier .env avant la mise en production.');
+    }
+  });
+}
+
+start().catch((err) => {
+  console.error("Échec du démarrage (connexion à la base de données ?) :", err);
+  process.exit(1);
 });
 
 module.exports = app;

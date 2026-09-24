@@ -1,21 +1,6 @@
-const db = require('../db');
+const { pool } = require('../db');
 
 const PAGE_SIZE = 20;
-
-const insertClient = db.prepare(`
-  INSERT INTO clients (nom, prenom, telephone, email, adresse)
-  VALUES (?, ?, ?, ?, ?)
-`);
-
-const findClientById = db.prepare('SELECT * FROM clients WHERE id = ?');
-
-const updateClientStmt = db.prepare(`
-  UPDATE clients
-  SET nom = ?, prenom = ?, telephone = ?, email = ?, adresse = ?
-  WHERE id = ?
-`);
-
-const deleteClientStmt = db.prepare('DELETE FROM clients WHERE id = ?');
 
 /**
  * Enregistre un nouveau client.
@@ -24,72 +9,78 @@ const deleteClientStmt = db.prepare('DELETE FROM clients WHERE id = ?');
  * concaténés dans la requête SQL : aucune injection SQL possible par ce
  * chemin.
  */
-function createClient({ nom, prenom, telephone, email, adresse }) {
-  const result = insertClient.run(
-    nom,
-    prenom,
-    telephone,
-    email || null,
-    adresse || null
+async function createClient({ nom, prenom, telephone, email, adresse }) {
+  const { rows } = await pool.query(
+    `INSERT INTO clients (nom, prenom, telephone, email, adresse)
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING id`,
+    [nom, prenom, telephone, email || null, adresse || null]
   );
-  return result.lastInsertRowid;
+  return rows[0].id;
 }
 
 /**
  * Retourne un client par son identifiant, ou undefined s'il n'existe pas.
  */
-function getClientById(id) {
-  return findClientById.get(id);
+async function getClientById(id) {
+  const { rows } = await pool.query('SELECT * FROM clients WHERE id = $1', [id]);
+  return rows[0];
 }
 
 /**
  * Met à jour un client existant. Retourne true si un client a bien été
  * modifié, false si l'identifiant ne correspond à aucun client.
  */
-function updateClient(id, { nom, prenom, telephone, email, adresse }) {
-  const result = updateClientStmt.run(
-    nom,
-    prenom,
-    telephone,
-    email || null,
-    adresse || null,
-    id
+async function updateClient(id, { nom, prenom, telephone, email, adresse }) {
+  const result = await pool.query(
+    `UPDATE clients
+     SET nom = $1, prenom = $2, telephone = $3, email = $4, adresse = $5
+     WHERE id = $6`,
+    [nom, prenom, telephone, email || null, adresse || null, id]
   );
-  return result.changes > 0;
+  return result.rowCount > 0;
 }
 
 /**
  * Supprime un client. Retourne true si un client a bien été supprimé.
  */
-function deleteClient(id) {
-  const result = deleteClientStmt.run(id);
-  return result.changes > 0;
+async function deleteClient(id) {
+  const result = await pool.query('DELETE FROM clients WHERE id = $1', [id]);
+  return result.rowCount > 0;
 }
 
 /**
  * Retourne une page de clients, avec un filtre de recherche optionnel
- * sur le nom, le prénom ou le téléphone.
+ * sur le nom, le prénom ou le téléphone (insensible à la casse : ILIKE).
  */
-function listClients({ search = '', page = 1 } = {}) {
+async function listClients({ search = '', page = 1 } = {}) {
   const safePage = Number.isInteger(page) && page > 0 ? page : 1;
   const offset = (safePage - 1) * PAGE_SIZE;
   const term = search && search.trim() !== '' ? `%${search.trim()}%` : null;
 
-  const where = term ? 'WHERE nom LIKE ? OR prenom LIKE ? OR telephone LIKE ?' : '';
-  const whereParams = term ? [term, term, term] : [];
+  const where = term
+    ? 'WHERE nom ILIKE $1 OR prenom ILIKE $1 OR telephone ILIKE $1'
+    : '';
+  const whereParams = term ? [term] : [];
 
-  const rows = db
-    .prepare(
-      `SELECT * FROM clients ${where} ORDER BY id DESC LIMIT ? OFFSET ?`
-    )
-    .all(...whereParams, PAGE_SIZE, offset);
+  const limitPlaceholder = `$${whereParams.length + 1}`;
+  const offsetPlaceholder = `$${whereParams.length + 2}`;
 
-  const { total } = db
-    .prepare(`SELECT COUNT(*) AS total FROM clients ${where}`)
-    .get(...whereParams);
+  const rowsResult = await pool.query(
+    `SELECT * FROM clients ${where}
+     ORDER BY id DESC
+     LIMIT ${limitPlaceholder} OFFSET ${offsetPlaceholder}`,
+    [...whereParams, PAGE_SIZE, offset]
+  );
+
+  const countResult = await pool.query(
+    `SELECT COUNT(*)::int AS total FROM clients ${where}`,
+    whereParams
+  );
+  const total = countResult.rows[0].total;
 
   return {
-    rows,
+    rows: rowsResult.rows,
     total,
     page: safePage,
     pageSize: PAGE_SIZE,
@@ -101,14 +92,18 @@ function listClients({ search = '', page = 1 } = {}) {
  * Retourne tous les clients correspondant à la recherche, sans pagination,
  * pour l'export PDF complet.
  */
-function listAllClients({ search = '' } = {}) {
+async function listAllClients({ search = '' } = {}) {
   const term = search && search.trim() !== '' ? `%${search.trim()}%` : null;
-  const where = term ? 'WHERE nom LIKE ? OR prenom LIKE ? OR telephone LIKE ?' : '';
-  const whereParams = term ? [term, term, term] : [];
+  const where = term
+    ? 'WHERE nom ILIKE $1 OR prenom ILIKE $1 OR telephone ILIKE $1'
+    : '';
+  const whereParams = term ? [term] : [];
 
-  return db
-    .prepare(`SELECT * FROM clients ${where} ORDER BY id ASC`)
-    .all(...whereParams);
+  const { rows } = await pool.query(
+    `SELECT * FROM clients ${where} ORDER BY id ASC`,
+    whereParams
+  );
+  return rows;
 }
 
 module.exports = {

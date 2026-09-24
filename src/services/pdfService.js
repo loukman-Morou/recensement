@@ -10,10 +10,12 @@ const COLUMNS = [
   { label: 'Enregistré le', key: 'date_enregistrement', width: 90 },
 ];
 
-function formatDate(isoLikeString) {
-  // Les dates SQLite ('datetime(now)') sont au format "YYYY-MM-DD HH:MM:SS" UTC.
-  const date = new Date(isoLikeString.replace(' ', 'T') + 'Z');
-  if (Number.isNaN(date.getTime())) return isoLikeString;
+function formatDate(value) {
+  // Le pilote PostgreSQL (pg) convertit automatiquement les colonnes
+  // TIMESTAMPTZ en objets Date JavaScript ; on garde une tolérance pour
+  // une chaîne (utile si la valeur vient d'ailleurs, ex. tests).
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value ?? '');
   return date.toLocaleString('fr-FR', {
     dateStyle: 'medium',
     timeStyle: 'short',

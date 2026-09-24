@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Amorçage — Registre des clients</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="connexion">
+    <div class="connexion__carte">
+      <h1 class="connexion__titre">Créer l'administrateur</h1>
+      <p class="connexion__sous-titre">
+        Cette page ne fonctionne qu'une seule fois, tant qu'aucun compte
+        n'existe. Pensez à retirer la variable d'environnement
+        <code>ADMIN_BOOTSTRAP_SECRET</code> juste après.
+      </p>
+
+      <% if (erreurs && erreurs.length > 0) { %>
+        <div class="liste-erreurs">
+          <ul>
+            <% erreurs.forEach(function(erreur) { %>
+              <li><%= erreur %></li>
+            <% }); %>
+          </ul>
+        </div>
+      <% } %>
+
+      <form action="/amorcage-admin" method="POST">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <input type="hidden" name="jeton" value="<%= jeton %>" />
+
+        <div class="champ">
+          <label for="username">Identifiant</label>
+          <input type="text" id="username" name="username" required autofocus maxlength="100" minlength="3" />
+        </div>
+
+        <div class="champ">
+          <label for="password">Mot de passe <span class="indication">(10 caractères minimum)</span></label>
+          <input type="password" id="password" name="password" required minlength="10" maxlength="200" autocomplete="new-password" />
+        </div>
+
+        <div class="champ">
+          <label for="confirmation">Confirmer le mot de passe</label>
+          <input type="password" id="confirmation" name="confirmation" required minlength="10" maxlength="200" autocomplete="new-password" />
+        </div>
+
+        <button type="submit" class="bouton">Créer le compte</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,29 +1,9 @@
 const bcrypt = require('bcryptjs');
-const db = require('../db');
+const { pool } = require('../db');
 
 // Coût bcrypt : 12 est un bon compromis sécurité/performance en 2026
 // (recommandation OWASP courante : >= 10-12).
 const BCRYPT_COST = 12;
-
-const findByUsername = db.prepare(
-  'SELECT * FROM users WHERE username = ?'
-);
-
-const insertUser = db.prepare(
-  'INSERT INTO users (username, password_hash) VALUES (?, ?)'
-);
-
-const updatePassword = db.prepare(
-  'UPDATE users SET password_hash = ? WHERE username = ?'
-);
-
-const findById = db.prepare('SELECT * FROM users WHERE id = ?');
-
-const updatePasswordById = db.prepare(
-  'UPDATE users SET password_hash = ? WHERE id = ?'
-);
-
-const countUsers = db.prepare('SELECT COUNT(*) AS total FROM users');
 
 // Hash factice, valide et généré une seule fois au démarrage, utilisé
 // uniquement pour que la vérification d'un identifiant inexistant prenne
@@ -36,7 +16,12 @@ const DUMMY_HASH = bcrypt.hashSync('valeur-de-remplissage-sans-signification', B
  * Retourne l'utilisateur (sans le hash) si valide, sinon null.
  */
 async function verifyCredentials(username, password) {
-  const user = findByUsername.get(username);
+  const { rows } = await pool.query(
+    'SELECT * FROM users WHERE username = $1',
+    [username]
+  );
+  const user = rows[0];
+
   if (!user) {
     await bcrypt.compare(password, DUMMY_HASH);
     return null;
@@ -48,19 +33,36 @@ async function verifyCredentials(username, password) {
   return { id: user.id, username: user.username };
 }
 
+/**
+ * Crée un administrateur, ou met à jour son mot de passe s'il existe déjà.
+ * Utilisé par le script CLI (scripts/createAdmin.js) et par la page
+ * d'amorçage (src/routes/amorcage.js).
+ */
 async function createOrUpdateUser(username, plainPassword) {
   const hash = await bcrypt.hash(plainPassword, BCRYPT_COST);
-  const existing = findByUsername.get(username);
-  if (existing) {
-    updatePassword.run(hash, username);
+  const { rows } = await pool.query(
+    'SELECT id FROM users WHERE username = $1',
+    [username]
+  );
+
+  if (rows[0]) {
+    await pool.query(
+      'UPDATE users SET password_hash = $1 WHERE username = $2',
+      [hash, username]
+    );
     return { updated: true };
   }
-  insertUser.run(username, hash);
+
+  await pool.query(
+    'INSERT INTO users (username, password_hash) VALUES ($1, $2)',
+    [username, hash]
+  );
   return { updated: false };
 }
 
-function hasAnyUser() {
-  return countUsers.get().total > 0;
+async function hasAnyUser() {
+  const { rows } = await pool.query('SELECT COUNT(*)::int AS total FROM users');
+  return rows[0].total > 0;
 }
 
 /**
@@ -71,7 +73,8 @@ function hasAnyUser() {
  * poste partagé permette à quelqu'un d'autre de reprendre le compte.
  */
 async function changePassword(userId, currentPassword, newPassword) {
-  const user = findById.get(userId);
+  const { rows } = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
+  const user = rows[0];
   if (!user) {
     return { success: false, reason: 'UTILISATEUR_INTROUVABLE' };
   }
@@ -82,7 +85,7 @@ async function changePassword(userId, currentPassword, newPassword) {
   }
 
   const hash = await bcrypt.hash(newPassword, BCRYPT_COST);
-  updatePasswordById.run(hash, userId);
+  await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, userId]);
   return { success: true };
 }
 

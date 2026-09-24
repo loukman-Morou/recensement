@@ -59,7 +59,7 @@
           <td><%= client.prenom %></td>
           <td><%= client.telephone %></td>
           <td><%= client.email || '—' %></td>
-          <td><%= client.date_enregistrement %></td>
+          <td><%= new Date(client.date_enregistrement).toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' }) %></td>
           <td class="registre__actions">
             <a class="lien-action" href="/clients/<%= client.id %>/modifier">Modifier</a>
             <form
